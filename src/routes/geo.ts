@@ -12,8 +12,8 @@ const schema = z.object({
   lat: z.coerce.number().min(-90).max(90),
   lon: z.coerce.number().min(-180).max(180),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  pollutant: z.enum(['AOD','NO2']).default('AOD'),
-  radius_km: z.coerce.number().min(10).max(200).default(100)
+  pollutant: z.enum(['AOD','NO2','SO2']).default('SO2'),
+  radius_km: z.coerce.number().min(10).max(1000).default(100)
 });
 
 function etagFor(obj: any) {
@@ -26,21 +26,20 @@ geoRouter.get('/heatmap', async (req, res) => {
   if (!p.success) return res.status(400).json({ error: 'Invalid query', details: p.error.flatten() });
   const { lat, lon, radius_km, pollutant } = p.data;
   const day = p.data.date ?? new Date().toISOString().slice(0,10);
-
   const cacheKey = `heatmap:${pollutant}:${day}:${lat.toFixed(3)},${lon.toFixed(3)}:${radius_km}`;
   const ttl = Number(process.env.HEATMAP_CACHE_TTL || 300);
   const cached = await cacheGet<any>(cacheKey);
-  if (cached) {
-    const tag = etagFor(cached);
-    if (req.headers['if-none-match'] === tag) return res.status(304).end();
-    res.setHeader('ETag', tag);
-    res.setHeader('Cache-Control', `public, max-age=${ttl}`);
-    return res.json(cached);
-  }
+  // if (cached) {
+  //   const tag = etagFor(cached);
+  //   if (req.headers['if-none-match'] === tag) return res.status(304).end();
+  //   res.setHeader('ETag', tag);
+  //   res.setHeader('Cache-Control', `public, max-age=${ttl}`);
+  //   return res.json(cached);
+  // }
 
   const ddeg = radius_km / 111.0;
-  const rows = await getObservationsInArea(day, pollutant, lat - ddeg, lat + ddeg, lon - ddeg, lon + ddeg);
-
+  //console.log('ENTROU!');
+  const rows = await getObservationsInArea(day, 'SO2', lat - ddeg, lat + ddeg, lon - ddeg, lon + ddeg);
   const cell = 0.2;
   const buckets = new Map<string, { lat: number; lon: number; values: number[] }>();
   for (const r of rows) {

@@ -24,7 +24,7 @@ export async function findLocationById(id: string) {
   return res.rows[0] || null;
 }
 
-export async function getObservationsInArea(day: string, pollutant: 'AOD'|'NO2', minLat: number, maxLat: number, minLon: number, maxLon: number) {
+export async function getObservationsInArea(day: string, pollutant: 'AOD'|'NO2'|'SO2', minLat: number, maxLat: number, minLon: number, maxLon: number) {
   const sql = `
     select lat, lon, value, unit, observed_at
     from public.air_quality_observations
@@ -32,7 +32,7 @@ export async function getObservationsInArea(day: string, pollutant: 'AOD'|'NO2',
       and pollutant = $5
       and observed_at >= $6::timestamptz
       and observed_at <= $7::timestamptz
-    limit 2000`;
+    limit 100000`;
   const fromTs = `${day}T00:00:00Z`;
   const toTs   = `${day}T23:59:59Z`;
   const res = await query(sql, [minLat, maxLat, minLon, maxLon, pollutant, fromTs, toTs]);
