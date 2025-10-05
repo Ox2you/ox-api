@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: Ox2You Air Quality Backend (Connected, Updated)
+  version: 1.0.3
+paths:
+  /health:
+    get:
+      summary: Health
+      responses:
+        '200':
+          description: OK
+  /health/db:
+    get:
+      summary: Health DB (latência/versão)
+      responses:
+        '200':
+          description: OK
+        '500':
+          description: DB error
+  /api/locations/search:
+    get:
+      summary: Busca por nome
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+  /api/locations/near:
+    get:
+      summary: Locais próximos
+      parameters:
+      - name: lat
+        in: query
+        required: true
+        schema:
+          type: number
+      - name: lon
+        in: query
+        required: true
+        schema:
+          type: number
+      - name: radius_km
+        in: query
+        required: false
+        schema:
+          type: number
+          default: 50
+      responses:
+        '200':
+          description: OK
+  /api/geo/heatmap:
+    get:
+      summary: Heatmap (GeoJSON)
+      parameters:
+      - name: lat
+        in: query
+        required: true
+        schema:
+          type: number
+      - name: lon
+        in: query
+        required: true
+        schema:
+          type: number
+      - name: date
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+      - name: pollutant
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - AOD
+          - NO2
+      - name: radius_km
+        in: query
+        required: false
+        schema:
+          type: number
+          default: 100
+      responses:
+        '200':
+          description: OK
+  /api/geo/heatmap/by-location/{id}:
+    get:
+      summary: Heatmap por location_id (GeoJSON)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: date
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+      - name: pollutant
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - AOD
+          - NO2
+      - name: radius_km
+        in: query
+        required: false
+        schema:
+          type: number
+          default: 100
+      responses:
+        '200':
+          description: OK
